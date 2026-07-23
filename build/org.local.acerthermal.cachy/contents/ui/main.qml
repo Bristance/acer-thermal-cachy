@@ -22,6 +22,7 @@ PlasmoidItem {
     property var profiles: fallbackProfiles
     property bool pending: false
     property string errorText: ""
+    property var commandActions: ({})
 
     preferredRepresentation: compactRepresentation
     toolTipMainText: "Acer Thermal"
@@ -72,15 +73,21 @@ PlasmoidItem {
         return "preferences-system-power"
     }
 
+    function runBackend(action, args) {
+        var source = commandLine(args)
+        commandActions[source] = action
+        executable.connectSource(source)
+    }
+
     function refresh() {
-        executable.connectSource(commandLine(["list", "--json"]))
+        runBackend("list", ["list", "--json"])
     }
 
     function setProfile(profileId) {
         pending = true
         errorText = ""
         currentProfile = profileId
-        executable.connectSource(commandLine(["set", profileId]))
+        runBackend("set", ["set", profileId])
     }
 
     function applyState(stdout) {
@@ -97,6 +104,9 @@ PlasmoidItem {
         onNewData: function(sourceName, data) {
             disconnectSource(sourceName)
 
+            var action = commandActions[sourceName] || ""
+            delete commandActions[sourceName]
+
             var stdout = String(data.stdout || "").trim()
             var stderr = String(data.stderr || "").trim()
             var exitCode = data["exit code"] || data.exitCode || 0
@@ -107,7 +117,7 @@ PlasmoidItem {
                 return
             }
 
-            if (sourceName.indexOf(" list ") !== -1) {
+            if (action === "list") {
                 try {
                     applyState(stdout)
                 } catch (error) {
@@ -117,7 +127,11 @@ PlasmoidItem {
                 return
             }
 
-            refresh()
+            if (action === "set") {
+                refresh()
+            } else {
+                pending = false
+            }
         }
     }
 
@@ -126,7 +140,10 @@ PlasmoidItem {
         repeat: true
         running: true
         triggeredOnStart: true
-        onTriggered: refresh()
+        onTriggered: {
+            if (!pending)
+                refresh()
+        }
     }
 
     compactRepresentation: MouseArea {
