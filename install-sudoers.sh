@@ -86,7 +86,7 @@ tmp_file="$(mktemp)"
 trap 'rm -f "$tmp_file"' EXIT
 
 cat > "$tmp_file" <<EOF
-# Allow Acer Thermal CachyOS GNOME extension to change only known thermal profiles.
+# Allow Acer Thermal CachyOS Plasma widget to change only known thermal profiles.
 Cmnd_Alias ACER_THERMAL_PROFILE = \\
     $BACKEND_PATH set quiet, \\
     $BACKEND_PATH set normal, \\

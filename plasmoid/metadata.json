@@ -1,0 +1,19 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Local"
+      }
+    ],
+    "Category": "System Information",
+    "Description": "Panel control for Acer Swift thermal profiles on CachyOS KDE Plasma.",
+    "Icon": "preferences-system-power",
+    "Id": "org.local.acerthermal.cachy",
+    "License": "GPL-3.0-only",
+    "Name": "Acer Thermal",
+    "Version": "1.0"
+  },
+  "X-Plasma-API": "declarativeappletscript",
+  "X-Plasma-MainScript": "ui/main.qml"
+}

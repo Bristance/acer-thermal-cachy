@@ -1,14 +1,13 @@
-# Acer Thermal for CachyOS GNOME
+# Acer Thermal for CachyOS KDE Plasma
 
-This is the CachyOS/Arch GNOME port of the Acer thermal profile controller. It
-adds a visible Acer Thermal item to the GNOME top bar and uses the same ACPI
-backend approach as the original COSMIC applet.
+This is the CachyOS/Arch KDE Plasma port of the Acer thermal profile
+controller. It installs a Plasma panel widget that controls the same ACPI
+backend used by the original COSMIC applet.
 
 ## Features
 
-- Shows the current thermal profile in the GNOME top bar
+- Shows the current thermal profile in a KDE Plasma panel widget
 - Provides Quiet, Normal, Performance, and Turbo profile actions
-- Supports GNOME Shell 42-44 with a legacy extension and GNOME Shell 45-50 with the modern extension API
 - Polls the backend every five seconds
 - Uses passwordless `sudo` when configured, otherwise falls back to `pkexec`
 - Keeps the backend command compatible with the original applet:
@@ -17,8 +16,8 @@ backend approach as the original COSMIC applet.
 
 ## Requirements
 
-- CachyOS or Arch-based GNOME desktop
-- GNOME Shell 42 or newer, including GNOME Shell 50.x
+- CachyOS or Arch-based KDE Plasma desktop
+- KDE Plasma 6
 - `acpi_call` loaded and exposing `/proc/acpi/call`
 - An Acer firmware method compatible with `\_SB.PC00.WMID.WMAA`
 - `sudo`; `pkexec` from `polkit` is used as an interactive fallback
@@ -65,20 +64,22 @@ Local install is available for testing, but profile changes will prompt through
 ./install.sh --local
 ```
 
-After installing, restart GNOME Shell or log out and back in, then enable:
+Restart Plasma Shell or log out and back in:
 
 ```sh
-gnome-extensions enable acer-thermal-cachy@local
-gnome-extensions info acer-thermal-cachy@local
+systemctl --user restart plasma-plasmashell.service
 ```
 
-Click the thermal profile label in the top bar. It appears as `Quiet`, `Normal`,
-`Performance`, or `Turbo` with a small status icon.
+Then add the widget:
+
+```text
+Right-click panel -> Add Widgets -> Acer Thermal
+```
 
 ## Passwordless Profile Changes
 
 Profile changes require root because the backend writes to `/proc/acpi/call`.
-To avoid a password prompt from the GNOME extension, install system-wide and add
+To avoid a password prompt from the Plasma widget, install system-wide and add
 the narrow sudoers rule:
 
 ```sh
@@ -115,20 +116,20 @@ Run:
 
 The most common issues are:
 
-- `State: OUT OF DATE`: installed metadata does not include your GNOME Shell major version.
 - `/proc/acpi/call` missing: install/load `acpi_call`.
 - Password prompts remain: run `./install.sh --system && ./install-sudoers.sh`.
-- No top-bar item: restart GNOME Shell or log out and back in after installation.
+- Widget not listed: restart Plasma Shell or log out and back in after installation.
+- Widget listed but no profile changes: verify `/usr/local/bin/thermal-control.sh list --json`.
 
-GNOME Shell extension errors are visible with:
+Plasma messages are visible with:
 
 ```sh
-journalctl --user -f /usr/bin/gnome-shell
+journalctl --user -f
 ```
 
 ## Backend
 
-The extension discovers the backend in this order:
+The widget discovers the backend in this order:
 
 1. `ACER_THERMAL_CONTROL_CMD`
 2. `/usr/local/bin/thermal-control.sh`

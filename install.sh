@@ -3,84 +3,58 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EXTENSION_UUID="acer-thermal-cachy@local"
+PLASMOID_ID="org.local.acerthermal.cachy"
+PLASMOID_SRC="$SCRIPT_DIR/plasmoid"
 BACKEND_SRC="$SCRIPT_DIR/backend/thermal-control.sh"
 BACKEND_NAME="thermal-control.sh"
 
 usage() {
-    cat <<EOF_USAGE
+    cat <<EOF
 Usage:
   $(basename "$0") [--local | --system]
 
 Options:
-  --local   Install the GNOME extension into \$HOME/.local and backend into \$HOME/.local/bin (default)
-  --system  Install the GNOME extension and backend system-wide using sudo
+  --local   Install the Plasma widget into \$HOME/.local and backend into \$HOME/.local/bin (default)
+  --system  Install the Plasma widget and backend system-wide using sudo
 
 CachyOS dependencies are not installed automatically. The installer prints the
 needed pacman commands for your current system state.
-EOF_USAGE
-}
-
-install_extension_files() {
-    local target="$1"
-    local extension_src="$2"
-
-    install -d "$target"
-    install -m0644 "$extension_src/metadata.json" "$target/metadata.json"
-    install -m0644 "$extension_src/extension.js" "$target/extension.js"
-}
-
-detect_gnome_major() {
-    if ! command -v gnome-shell >/dev/null 2>&1; then
-        echo ""
-        return
-    fi
-
-    gnome-shell --version | sed -E 's/.* ([0-9]+)(\.[0-9]+)*/\1/'
-}
-
-select_extension_src() {
-    local major
-    major="$(detect_gnome_major)"
-
-    case "$major" in
-        42|43|44)
-            echo "$SCRIPT_DIR/extension-legacy"
-            ;;
-        ""|*[!0-9]*)
-            echo "$SCRIPT_DIR/extension"
-            ;;
-        *)
-            echo "$SCRIPT_DIR/extension"
-            ;;
-    esac
+EOF
 }
 
 installed_with_pacman() {
     command -v pacman >/dev/null 2>&1 && pacman -Q "$1" >/dev/null 2>&1
 }
 
+install_plasmoid_files() {
+    local target="$1"
+
+    install -d "$target/contents/ui"
+    install -m0644 "$PLASMOID_SRC/metadata.json" "$target/metadata.json"
+    install -m0644 "$PLASMOID_SRC/contents/ui/main.qml" "$target/contents/ui/main.qml"
+}
+
 print_cachyos_dependency_status() {
     echo
-    echo "CachyOS dependency status:"
+    echo "CachyOS KDE dependency status:"
 
     if ! command -v pacman >/dev/null 2>&1; then
         echo "  pacman: not found. This installer is tuned for CachyOS/Arch."
         return
     fi
 
-    if command -v gnome-shell >/dev/null 2>&1; then
-        echo "  GNOME Shell: $(gnome-shell --version)"
+    if command -v plasmashell >/dev/null 2>&1; then
+        echo "  plasmashell: $(plasmashell --version 2>/dev/null || echo found)"
     else
-        echo "  GNOME Shell: missing"
-        echo "    Install with: sudo pacman -S gnome-shell gnome-shell-extensions"
+        echo "  plasmashell: missing"
+        echo "    Install with: sudo pacman -S plasma-desktop"
     fi
 
-    if command -v gnome-extensions >/dev/null 2>&1; then
-        echo "  gnome-extensions: found"
+    if command -v kpackagetool6 >/dev/null 2>&1; then
+        echo "  kpackagetool6: found"
     else
-        echo "  gnome-extensions: missing"
-        echo "    Install with: sudo pacman -S gnome-shell-extensions"
+        echo "  kpackagetool6: missing"
+        echo "    Install with: sudo pacman -S kpackage"
     fi
 
     if installed_with_pacman acpi_call || installed_with_pacman acpi_call-dkms; then
@@ -107,37 +81,33 @@ print_cachyos_dependency_status() {
 }
 
 install_local() {
-    local extension_dir="${HOME}/.local/share/gnome-shell/extensions/${EXTENSION_UUID}"
+    local plasmoid_dir="${HOME}/.local/share/plasma/plasmoids/${PLASMOID_ID}"
     local bin_dir="${HOME}/.local/bin"
-    local extension_src="$1"
 
-    install_extension_files "$extension_dir" "$extension_src"
+    install_plasmoid_files "$plasmoid_dir"
     install -d "$bin_dir"
     install -m0755 "$BACKEND_SRC" "$bin_dir/$BACKEND_NAME"
 
-    cat <<EOF_LOCAL
+    cat <<EOF
 Installed locally:
-  Extension: $extension_dir
-  Source: $extension_src
+  Plasma widget: $plasmoid_dir
   Backend: $bin_dir/$BACKEND_NAME
-EOF_LOCAL
+EOF
 }
 
 install_system() {
-    local extension_dir="/usr/share/gnome-shell/extensions/${EXTENSION_UUID}"
-    local extension_src="$1"
+    local plasmoid_dir="/usr/share/plasma/plasmoids/${PLASMOID_ID}"
 
-    sudo install -d "$extension_dir"
-    sudo install -m0644 "$extension_src/metadata.json" "$extension_dir/metadata.json"
-    sudo install -m0644 "$extension_src/extension.js" "$extension_dir/extension.js"
+    sudo install -d "$plasmoid_dir/contents/ui"
+    sudo install -m0644 "$PLASMOID_SRC/metadata.json" "$plasmoid_dir/metadata.json"
+    sudo install -m0644 "$PLASMOID_SRC/contents/ui/main.qml" "$plasmoid_dir/contents/ui/main.qml"
     sudo install -Dm0755 "$BACKEND_SRC" "/usr/local/bin/$BACKEND_NAME"
 
-    cat <<EOF_SYSTEM
+    cat <<EOF
 Installed system-wide:
-  Extension: $extension_dir
-  Source: $extension_src
+  Plasma widget: $plasmoid_dir
   Backend: /usr/local/bin/$BACKEND_NAME
-EOF_SYSTEM
+EOF
 }
 
 mode="local"
@@ -161,38 +131,32 @@ case "${1:-}" in
         ;;
 esac
 
-extension_src="$(select_extension_src)"
-
 if [[ "$mode" == "system" ]]; then
-    install_system "$extension_src"
+    install_system
 else
-    install_local "$extension_src"
+    install_local
 fi
 
 print_cachyos_dependency_status
 
-cat <<EOF_NEXT
+cat <<EOF
 
-Next steps on CachyOS GNOME:
+Next steps on CachyOS KDE Plasma:
   1. Install any missing dependencies printed above.
   2. Load acpi_call if needed:
        sudo modprobe acpi_call
-  3. Restart GNOME Shell or log out and back in.
-  4. Enable the extension:
-       gnome-extensions enable ${EXTENSION_UUID}
-  5. Confirm GNOME loaded it:
-       gnome-extensions info ${EXTENSION_UUID}
+  3. Restart Plasma Shell or log out and back in:
+       systemctl --user restart plasma-plasmashell.service
+  4. Add the widget to your panel:
+       Right-click panel -> Add Widgets -> Acer Thermal
 
-For passwordless profile switching with the GNOME extension:
+For passwordless profile switching with the Plasma widget:
   ./install.sh --system
   ./install-sudoers.sh
 
-Detected extension source:
-  $extension_src
-
-The extension looks for thermal-control.sh in:
+The widget looks for thermal-control.sh in:
   ACER_THERMAL_CONTROL_CMD
   /usr/local/bin/thermal-control.sh
   PATH
   \$HOME/.local/bin/thermal-control.sh
-EOF_NEXT
+EOF
