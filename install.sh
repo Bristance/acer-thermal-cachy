@@ -11,11 +11,13 @@ BACKEND_NAME="thermal-control.sh"
 usage() {
     cat <<EOF
 Usage:
-  $(basename "$0") [--local | --system]
+  $(basename "$0") [--local | --system] [--add-to-panel]
 
 Options:
   --local   Install the Plasma widget into \$HOME/.local and backend into \$HOME/.local/bin (default)
   --system  Install the Plasma widget and backend system-wide using sudo
+  --add-to-panel
+            Ask Plasma Shell to add the widget to the first panel after install
 
 CachyOS dependencies are not installed automatically. The installer prints the
 needed pacman commands for your current system state.
@@ -120,30 +122,39 @@ EOF
 }
 
 mode="local"
+add_to_panel=false
 
-case "${1:-}" in
-    "")
-        ;;
-    --local)
-        mode="local"
-        ;;
-    --system)
-        mode="system"
-        ;;
-    -h|--help)
-        usage
-        exit 0
-        ;;
-    *)
-        usage >&2
-        exit 1
-        ;;
-esac
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --local)
+            mode="local"
+            ;;
+        --system)
+            mode="system"
+            ;;
+        --add-to-panel)
+            add_to_panel=true
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            usage >&2
+            exit 1
+            ;;
+    esac
+    shift
+done
 
 if [[ "$mode" == "system" ]]; then
     install_system
 else
     install_local
+fi
+
+if [[ "$add_to_panel" == true ]]; then
+    "$SCRIPT_DIR/add-to-panel.sh"
 fi
 
 print_cachyos_dependency_status
@@ -158,6 +169,8 @@ Next steps on CachyOS KDE Plasma:
        systemctl --user restart plasma-plasmashell.service
   4. Add the widget to your panel:
        Right-click panel -> Add Widgets -> Acer Thermal
+     Or install and add automatically:
+       ./install.sh --system --add-to-panel
 
 Local Plasma package management:
   kpackagetool6 --type Plasma/Applet --show ${PLASMOID_ID}

@@ -25,6 +25,7 @@ uninstall-local:
 check:
 	bash -n install.sh
 	bash -n uninstall.sh
+	bash -n add-to-panel.sh
 	bash -n install-sudoers.sh
 	bash -n uninstall-sudoers.sh
 	bash -n diagnose.sh

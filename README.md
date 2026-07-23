@@ -57,6 +57,12 @@ root-owned backend at `/usr/local/bin/thermal-control.sh`:
 ./install.sh --system
 ```
 
+To install and ask Plasma to place Acer Thermal directly on the panel:
+
+```sh
+./install.sh --system --add-to-panel
+```
+
 Local install is available for testing. It uses `kpackagetool6` when available,
 but profile changes will prompt through `pkexec` or `sudo` unless passwordless
 sudo is configured:
@@ -75,6 +81,12 @@ Then add the widget:
 
 ```text
 Right-click panel -> Add Widgets -> Acer Thermal
+```
+
+You can also add it to the first available panel later with:
+
+```sh
+./add-to-panel.sh
 ```
 
 For local package inspection/removal:
