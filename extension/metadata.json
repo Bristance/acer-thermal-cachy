@@ -1,0 +1,8 @@
+{
+  "uuid": "acer-thermal-cachy@local",
+  "name": "Acer Thermal CachyOS",
+  "description": "Top-bar CachyOS GNOME control for Acer Swift thermal profiles.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "url": "https://github.com/local/acer-thermal-cachy",
+  "version": 1
+}
