@@ -84,13 +84,22 @@ install_local() {
     local plasmoid_dir="${HOME}/.local/share/plasma/plasmoids/${PLASMOID_ID}"
     local bin_dir="${HOME}/.local/bin"
 
-    install_plasmoid_files "$plasmoid_dir"
+    if command -v kpackagetool6 >/dev/null 2>&1; then
+        if kpackagetool6 --type Plasma/Applet --show "$PLASMOID_ID" >/dev/null 2>&1; then
+            kpackagetool6 --type Plasma/Applet --upgrade "$PLASMOID_SRC"
+        else
+            kpackagetool6 --type Plasma/Applet --install "$PLASMOID_SRC"
+        fi
+    else
+        install_plasmoid_files "$plasmoid_dir"
+    fi
+
     install -d "$bin_dir"
     install -m0755 "$BACKEND_SRC" "$bin_dir/$BACKEND_NAME"
 
     cat <<EOF
 Installed locally:
-  Plasma widget: $plasmoid_dir
+  Plasma widget: $PLASMOID_ID
   Backend: $bin_dir/$BACKEND_NAME
 EOF
 }
@@ -149,6 +158,10 @@ Next steps on CachyOS KDE Plasma:
        systemctl --user restart plasma-plasmashell.service
   4. Add the widget to your panel:
        Right-click panel -> Add Widgets -> Acer Thermal
+
+Local Plasma package management:
+  kpackagetool6 --type Plasma/Applet --show ${PLASMOID_ID}
+  kpackagetool6 --type Plasma/Applet --remove ${PLASMOID_ID}
 
 For passwordless profile switching with the Plasma widget:
   ./install.sh --system

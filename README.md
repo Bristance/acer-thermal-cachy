@@ -1,12 +1,12 @@
 # Acer Thermal for CachyOS KDE Plasma
 
-This is the CachyOS/Arch KDE Plasma port of the Acer thermal profile
-controller. It installs a Plasma panel widget that controls the same ACPI
+This is the CachyOS/Arch KDE Plasma 6 port of the Acer thermal profile
+controller. It installs a Plasma 6 panel widget that controls the same ACPI
 backend used by the original COSMIC applet.
 
 ## Features
 
-- Shows the current thermal profile in a KDE Plasma panel widget
+- Shows the current thermal profile in a KDE Plasma 6 panel widget
 - Provides Quiet, Normal, Performance, and Turbo profile actions
 - Polls the backend every five seconds
 - Uses passwordless `sudo` when configured, otherwise falls back to `pkexec`
@@ -17,7 +17,7 @@ backend used by the original COSMIC applet.
 ## Requirements
 
 - CachyOS or Arch-based KDE Plasma desktop
-- KDE Plasma 6
+- KDE Plasma 6 with `kpackagetool6`
 - `acpi_call` loaded and exposing `/proc/acpi/call`
 - An Acer firmware method compatible with `\_SB.PC00.WMID.WMAA`
 - `sudo`; `pkexec` from `polkit` is used as an interactive fallback
@@ -57,8 +57,9 @@ root-owned backend at `/usr/local/bin/thermal-control.sh`:
 ./install.sh --system
 ```
 
-Local install is available for testing, but profile changes will prompt through
-`pkexec` or `sudo`:
+Local install is available for testing. It uses `kpackagetool6` when available,
+but profile changes will prompt through `pkexec` or `sudo` unless passwordless
+sudo is configured:
 
 ```sh
 ./install.sh --local
@@ -74,6 +75,13 @@ Then add the widget:
 
 ```text
 Right-click panel -> Add Widgets -> Acer Thermal
+```
+
+For local package inspection/removal:
+
+```sh
+kpackagetool6 --type Plasma/Applet --show org.local.acerthermal.cachy
+kpackagetool6 --type Plasma/Applet --remove org.local.acerthermal.cachy
 ```
 
 ## Passwordless Profile Changes

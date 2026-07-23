@@ -4,6 +4,7 @@ set -euo pipefail
 
 PLASMOID_ID="org.local.acerthermal.cachy"
 LOCAL_PLASMOID_DIR="${HOME}/.local/share/plasma/plasmoids/${PLASMOID_ID}"
+LOCAL_KPACKAGE_DIR="${HOME}/.local/share/kpackage/genericqml/${PLASMOID_ID}"
 SYSTEM_PLASMOID_DIR="/usr/share/plasma/plasmoids/${PLASMOID_ID}"
 
 section() {
@@ -25,7 +26,7 @@ else
 fi
 
 section "Installed files"
-for path in "$LOCAL_PLASMOID_DIR" "$SYSTEM_PLASMOID_DIR"; do
+for path in "$LOCAL_PLASMOID_DIR" "$LOCAL_KPACKAGE_DIR" "$SYSTEM_PLASMOID_DIR"; do
     if [[ -d "$path" ]]; then
         echo "Found: $path"
         find "$path" -maxdepth 3 -type f -print

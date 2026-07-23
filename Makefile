@@ -30,6 +30,7 @@ check:
 	bash -n diagnose.sh
 	bash -n backend/thermal-control.sh
 	python3 -m json.tool plasmoid/metadata.json >/dev/null
+	test "$$(python3 -c 'import json; print(json.load(open("plasmoid/metadata.json"))["X-Plasma-API-Minimum-Version"])')" = "6.0"
 
 clean:
 	rm -rf "$(BUILD_DIR)" "$(DIST_DIR)"

@@ -20,6 +20,10 @@ uninstall_local() {
     local plasmoid_dir="${HOME}/.local/share/plasma/plasmoids/${PLASMOID_ID}"
     local backend_path="${HOME}/.local/bin/${BACKEND_NAME}"
 
+    if command -v kpackagetool6 >/dev/null 2>&1; then
+        kpackagetool6 --type Plasma/Applet --remove "$PLASMOID_ID" || true
+    fi
+
     rm -rf "$plasmoid_dir"
     rm -f "$backend_path"
 
